@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Three Crises, One Economy | UK Economic Impact Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --covid: #E63946;
+    --covid-glow: rgba(230,57,70,0.15);
+    --ukraine: #457B9D;
+    --ukraine-glow: rgba(69,123,157,0.15);
+    --iran: #E9C46A;
+    --iran-glow: rgba(233,196,106,0.15);
+    --bg: #0B1120;
+    --bg2: #0F172A;
+    --card: #111827;
+    --card-border: #1E293B;
+    --text: #E2E8F0;
+    --text-muted: #94A3B8;
+    --accent: #F8FAFC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: linear-gradient(165deg, var(--bg) 0%, var(--bg2) 40%, #131B2E 100%);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 999;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+    position: relative;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    margin-bottom: 56px;
+    animation: fadeUp 0.8s ease-out;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 5px 16px;
+    border-radius: 20px;
+    background: var(--covid-glow);
+    border: 1px solid rgba(230,57,70,0.3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    color: var(--covid);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #F8FAFC 0%, #64748B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--text-muted);
+    font-size: 16px;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  /* Section titles */
+  .section {
+    margin-bottom: 56px;
+    animation: fadeUp 0.7s ease-out both;
+  }
+
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.2s; }
+  .section:nth-child(4) { animation-delay: 0.3s; }
+  .section:nth-child(5) { animation-delay: 0.4s; }
+  .section:nth-child(6) { animation-delay: 0.5s; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    max-width: 600px;
+    margin-bottom: 24px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  /* Summary grid */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+    margin-bottom: 12px;
+  }
+
+  .summary-card {
+    padding-left: 32px;
+  }
+
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 5px; height: 100%;
+    border-radius: 16px 0 0 16px;
+  }
+
+  .summary-card.covid::before { background: var(--covid); }
+  .summary-card.ukraine::before { background: var(--ukraine); }
+  .summary-card.iran::before { background: var(--iran); }
+
+  .summary-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .summary-icon { font-size: 26px; }
+
+  .summary-name {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .summary-card.covid .summary-name { color: var(--covid); }
+  .summary-card.ukraine .summary-name { color: var(--ukraine); }
+  .summary-card.iran .summary-name { color: var(--iran); }
+
+  .summary-period {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  .metric-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    text-align: right;
+  }
+
+  .summary-tagline {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 12px;
+    line-height: 1.55;
+  }
+
+  /* Chart containers */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  @media (max-width: 720px) {
+    .chart-grid { grid-template-columns: 1fr; }
+  }
+
+  .chart-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .chart-card-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  canvas { max-width: 100%; }
+
+  /* Stat callouts */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .stat-box {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .stat-crisis {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .stat-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Insight boxes */
+  .insight-box {
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin-top: 20px;
+  }
+
+  .insight-box.covid-theme {
+    background: var(--covid-glow);
+    border: 1px solid rgba(230,57,70,0.2);
+  }
+
+  .insight-box.ukraine-theme {
+    background: var(--ukraine-glow);
+    border: 1px solid rgba(69,123,157,0.2);
+  }
+
+  .insight-box.iran-theme {
+    background: var(--iran-glow);
+    border: 1px solid rgba(233,196,106,0.2);
+  }
+
+  .insight-box strong {
+    color: var(--accent);
+  }
+
+  /* Energy detail cards */
+  .energy-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .energy-detail {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .energy-detail-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .energy-detail-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .energy-detail-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .footer p {
+    font-size: 10px;
+    color: rgba(148,163,184,0.5);
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">UK Economic Analysis &middot; April 2026</div>
+    <h1>Three Crises, One Economy</h1>
+    <p>A visual comparison of how COVID-19, the Ukraine war, and the Iran conflict have each reshaped the UK's financial landscape.</p>
+  </div>
+
+  <!-- Section 1: At a Glance -->
+  <div class="section reveal">
+    <span class="section-label">01 &mdash; At a Glance</span>
+    <h2 class="section-title">Crisis Snapshot</h2>
+    <p class="section-desc">Three very different shocks, each with a distinct fingerprint on the economy.</p>
+
+    <div class="summary-grid">
+      <div class="card summary-card covid">
+        <div class="summary-header">
+          <span class="summary-icon">🦠</span>
+          <div>
+            <div class="summary-name">COVID-19</div>
+            <div class="summary-period">2020 &ndash; 2021</div>
+          </div>
+        </div>
+        <div class="metric-row"><span class="metric-label">GDP Impact</span><span class="metric-value">-9.7%</span></div>
+        <div class="metric-row"><span class="metric-label">Inflation</span><span class="metric-value">0.5% &rarr; 5.1%</span></div>
+        <div class="metric-row"><span class="metric-label">Govt Spending</span><span class="metric-value">£310-410bn</span></div>
+        <div class="metric-row"><span class="metric-label">Debt</span><span class="metric-value">80% &rarr; 97% of GDP</span></div>
+        <p class="summary-tagline">Sudden cardiac arrest. Massive emergency spending, strong bounce-back.</p>
+      </div>
+
+      <div class="card summary-card ukraine">
+        <div class="summary-header">
+          <span class="summary-icon">⚔️</span>
+          <div>
+            <div class="summary-name">Ukraine War</div>
+            <div class="summary-period">2022 &ndash; 2023</div>
+          </div>
+        </div>
+        <div class="metric-row"><span class="metric-label">GDP Impact</span><span class="metric-value">~0% (stagnation)</span></div>
+        <div class="metric-row"><span class="metric-label">Inflation</span><span class="metric-value">11.1% peak</span></div>
+        <div class="metric-row"><span class="metric-label">Govt Spending</span><span class="metric-value">~£50-70bn (energy support)</span></div>
+        <div class="metric-row"><span class="metric-label">Debt</span><span class="metric-value">Servicing costs surged</span></div>
+        <p class="summary-tagline">Slow burn. Cost of living crisis, 40-year high inflation.</p>
+      </div>
+
+      <div class="card summary-card iran">
+        <div class="summary-header">
+          <span class="summary-icon">🛢️</span>
+          <div>
+            <div class="summary-name">Iran War</div>
+            <div class="summary-period">2026 (ongoing)</div>
+          </div>
+        </div>
+        <div class="metric-row"><span class="metric-label">GDP Impact</span><span class="metric-value">0.8% (forecast)</span></div>
+        <div class="metric-row"><span class="metric-label">Inflation</span><span class="metric-value">3.0% &rarr; 4.5% est.</span></div>
+        <div class="metric-row"><span class="metric-label">Govt Spending</span><span class="metric-value">Targeted measures</span></div>
+        <div class="metric-row"><span class="metric-label">Debt</span><span class="metric-value">Gilt market under pressure</span></div>
+        <p class="summary-tagline">Energy supply shock on a weakened economy. Strait of Hormuz closure.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: GDP -->
+  <div class="section reveal">
+    <span class="section-label">02 &mdash; Output</span>
+    <h2 class="section-title">GDP Growth</h2>
+    <p class="section-desc">COVID caused the biggest peacetime GDP collapse since records began. The Ukraine war brought stagnation. The Iran conflict is forecast to cut growth roughly in half.</p>
+
+    <div class="card">
+      <div class="chart-card-title">Annual GDP Growth During Each Crisis</div>
+      <div class="chart-card-sub">% change in real GDP</div>
+      <canvas id="gdpChart" height="280"></canvas>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-crisis" style="color:var(--covid)">COVID-19</div>
+        <div class="stat-number">-9.7%</div>
+        <div class="stat-sub">Worst since 1709</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-crisis" style="color:var(--ukraine)">Ukraine War</div>
+        <div class="stat-number">~0%</div>
+        <div class="stat-sub">Near stagnation</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-crisis" style="color:var(--iran)">Iran War</div>
+        <div class="stat-number">0.8%</div>
+        <div class="stat-sub">IMF 2026 forecast</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Inflation -->
+  <div class="section reveal">
+    <span class="section-label">03 &mdash; Prices</span>
+    <h2 class="section-title">Inflation</h2>
+    <p class="section-desc">The Ukraine war drove inflation to a 40-year high. The Iran conflict threatens a second wave just as prices were settling back towards target.</p>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="chart-card-title">CPI Inflation at Key Moments</div>
+        <div class="chart-card-sub">Annual % change, UK Consumer Prices Index</div>
+        <canvas id="inflationBarChart" height="300"></canvas>
+      </div>
+      <div class="card">
+        <div class="chart-card-title">Inflation Trajectory</div>
+        <div class="chart-card-sub">How CPI moved through each crisis period</div>
+        <canvas id="inflationLineChart" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="insight-box ukraine-theme">
+      <strong>Key takeaway:</strong> The Bank of England's 2% target was only briefly met between crises. Ukraine pushed CPI to 11.1%, and seven consecutive months sat in double digits. Now, the Iran conflict threatens to push inflation back above 4% just as it was approaching target again.
+    </div>
+  </div>
+
+  <!-- Section 4: Energy -->
+  <div class="section reveal">
+    <span class="section-label">04 &mdash; Energy</span>
+    <h2 class="section-title">Energy Price Shocks</h2>
+    <p class="section-desc">Each crisis had a completely different energy story, from collapsing demand to supply-side shocks.</p>
+
+    <div class="card">
+      <div class="chart-card-title">Wholesale Price Changes</div>
+      <div class="chart-card-sub">Approximate % change in UK energy prices during each crisis</div>
+      <canvas id="energyChart" height="280"></canvas>
+    </div>
+
+    <div class="energy-details">
+      <div class="card energy-detail">
+        <span class="energy-detail-icon">📉</span>
+        <div>
+          <div class="energy-detail-title" style="color:var(--covid)">COVID-19</div>
+          <p class="energy-detail-text">Oil prices briefly went negative in April 2020. Demand collapsed as lockdowns shut down travel and industry worldwide.</p>
+        </div>
+      </div>
+      <div class="card energy-detail">
+        <span class="energy-detail-icon">🔥</span>
+        <div>
+          <div class="energy-detail-title" style="color:var(--ukraine)">Ukraine War</div>
+          <p class="energy-detail-text">Wholesale gas surged by up to 300%. Russia's supply cuts triggered the worst European energy crisis in decades. UK household bills doubled.</p>
+        </div>
+      </div>
+      <div class="card energy-detail">
+        <span class="energy-detail-icon">⛽</span>
+        <div>
+          <div class="energy-detail-title" style="color:var(--iran)">Iran War</div>
+          <p class="energy-detail-text">Strait of Hormuz closure removed ~10% of global oil supply. UK wholesale gas up 75% in one month. Diesel prices up 20% within weeks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Government Spending -->
+  <div class="section reveal">
+    <span class="section-label">05 &mdash; Fiscal Response</span>
+    <h2 class="section-title">Government Spending &amp; Debt</h2>
+    <p class="section-desc">COVID triggered the largest peacetime fiscal intervention in UK history. Subsequent crises have landed on an already stretched public balance sheet.</p>
+
+    <div class="chart-grid">
+      <div class="card">
+        <div class="chart-card-title">Direct Government Spending</div>
+        <div class="chart-card-sub">Estimated total fiscal response (£ billions)</div>
+        <canvas id="spendingChart" height="300"></canvas>
+      </div>
+      <div class="card">
+        <div class="chart-card-title">Government Debt as % of GDP</div>
+        <div class="chart-card-sub">Before and after each crisis</div>
+        <canvas id="debtChart" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="insight-box covid-theme">
+      <strong>Context:</strong> COVID cost the UK government an estimated £310-410 billion, equivalent to roughly £4,600 to £6,100 per person. Government borrowing hit £313 billion in 2020/21 alone, a level not seen outside of wartime. The UK is now navigating new shocks with debt already near 100% of GDP.
+    </div>
+  </div>
+
+  <!-- Section 6: Comparative Radar -->
+  <div class="section reveal">
+    <span class="section-label">06 &mdash; Overall</span>
+    <h2 class="section-title">Comparative Severity</h2>
+    <p class="section-desc">Each crisis caused damage in different dimensions. This radar shows the relative severity across six key economic measures.</p>
+
+    <div class="card" style="max-width:560px;">
+      <canvas id="radarChart" height="360"></canvas>
+    </div>
+
+    <div class="insight-box iran-theme" style="margin-top:20px; max-width:560px;">
+      <strong>The big picture:</strong> COVID was a heart attack, sudden and dramatic with massive emergency spending. The Ukraine war was a slow-burning infection, eroding living standards through persistent inflation. The Iran conflict is an energy supply shock landing on an economy still recovering from the cumulative damage of the previous two.
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Sources: IMF World Economic Outlook (April 2026), ONS, Bank of England, House of Commons Library, OBR, OECD. Iran war figures are early estimates and forecasts subject to change. Compiled April 2026.</p>
+  </div>
+
+</div>
+
+<script>
+// Global Chart.js config
+Chart.defaults.color = '#94A3B8';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyle = 'circle';
+Chart.defaults.plugins.tooltip.backgroundColor = '#1E293B';
+Chart.defaults.plugins.tooltip.borderColor = '#334155';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.padding = 12;
+
+const COVID = '#E63946';
+const UKRAINE = '#457B9D';
+const IRAN = '#E9C46A';
+
+// 1. GDP Bar Chart
+new Chart(document.getElementById('gdpChart'), {
+  type: 'bar',
+  data: {
+    labels: ['COVID-19 (2020)', 'Ukraine War (2022)', 'Iran War (2026f)'],
+    datasets: [{
+      label: 'GDP Growth %',
+      data: [-9.7, 0.1, 0.8],
+      backgroundColor: [COVID, UKRAINE, IRAN],
+      borderRadius: 6,
+      barThickness: 56,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: ctx => `${ctx.parsed.y}%` }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: false,
+        min: -12,
+        max: 4,
+        ticks: { callback: v => v + '%' },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      x: {
+        grid: { display: false }
+      }
+    }
+  }
+});
+
+// 2. Inflation Bar Chart
+new Chart(document.getElementById('inflationBarChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Pre-COVID\n(Jan 2020)', 'COVID Low\n(Aug 2020)', 'Pre-Ukraine\n(Jan 2022)', 'Ukraine Peak\n(Oct 2022)', 'Pre-Iran\n(Feb 2026)', 'Iran Est.\n(Late 2026)'],
+    datasets: [{
+      label: 'CPI %',
+      data: [1.8, 0.5, 5.5, 11.1, 3.0, 4.5],
+      backgroundColor: [COVID, COVID, UKRAINE, UKRAINE, IRAN, IRAN],
+      borderRadius: 5,
+      barThickness: 28,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => `CPI: ${ctx.parsed.y}%` } }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 13,
+        ticks: { callback: v => v + '%' },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10 } }
+      }
+    }
+  }
+});
+
+// 3. Inflation Line Chart
+new Chart(document.getElementById('inflationLineChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan 2020', 'Aug 2020', 'Jan 2021', 'Jan 2022', 'Oct 2022', 'Jan 2024', 'Dec 2025', 'Feb 2026', 'Late 2026'],
+    datasets: [
+      {
+        label: 'UK CPI Inflation %',
+        data: [1.8, 0.5, 0.7, 5.5, 11.1, 4.0, 3.4, 3.0, 4.5],
+        borderColor: '#F8FAFC',
+        backgroundColor: 'rgba(248,250,252,0.05)',
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: [COVID, COVID, COVID, UKRAINE, UKRAINE, UKRAINE, '#94A3B8', IRAN, IRAN],
+        pointBorderColor: 'transparent',
+        pointHoverRadius: 7,
+      },
+      {
+        label: 'BoE 2% Target',
+        data: [2, 2, 2, 2, 2, 2, 2, 2, 2],
+        borderColor: 'rgba(230,57,70,0.4)',
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        fill: false,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: true, position: 'bottom', labels: { font: { size: 11 } } },
+      tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}%` } }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 13,
+        ticks: { callback: v => v + '%' },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10 }, maxRotation: 40 }
+      }
+    }
+  }
+});
+
+// 4. Energy Chart
+new Chart(document.getElementById('energyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['COVID-19', 'Ukraine War', 'Iran War'],
+    datasets: [
+      {
+        label: 'Petrol/Oil %',
+        data: [-15, 40, 10],
+        backgroundColor: [COVID, COVID, COVID].map(c => c + 'CC'),
+        borderRadius: 4,
+        barThickness: 36,
+      },
+      {
+        label: 'Wholesale Gas %',
+        data: [-20, 300, 75],
+        backgroundColor: [UKRAINE, UKRAINE, UKRAINE].map(c => c + 'CC'),
+        borderRadius: 4,
+        barThickness: 36,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 11 } } },
+      tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y > 0 ? '+' : ''}${ctx.parsed.y}%` } }
+    },
+    scales: {
+      y: {
+        ticks: { callback: v => (v > 0 ? '+' : '') + v + '%' },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// 5. Spending Chart
+new Chart(document.getElementById('spendingChart'), {
+  type: 'bar',
+  data: {
+    labels: ['COVID-19', 'Ukraine War', 'Iran War'],
+    datasets: [{
+      label: '£ Billions',
+      data: [370, 60, 10],
+      backgroundColor: [COVID, UKRAINE, IRAN],
+      borderRadius: 6,
+      barThickness: 56,
+    }]
+  },
+  options: {
+    responsive: true,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => `£${ctx.parsed.x}bn` } }
+    },
+    scales: {
+      x: {
+        ticks: { callback: v => '£' + v + 'bn' },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// 6. Debt Chart
+new Chart(document.getElementById('debtChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Pre-COVID\n(2019)', 'Post-COVID\n(2022)', 'Post-Ukraine\n(2024)', 'Current\n(2026)'],
+    datasets: [{
+      label: 'Debt % of GDP',
+      data: [80, 97, 98, 97],
+      backgroundColor: ['#334155', COVID, UKRAINE, IRAN],
+      borderRadius: 5,
+      barThickness: 40,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => `${ctx.parsed.y}% of GDP` } }
+    },
+    scales: {
+      y: {
+        min: 60,
+        max: 105,
+        ticks: { callback: v => v + '%' },
+        grid: { color: 'rgba(255,255,255,0.04)' }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10 } }
+      }
+    }
+  }
+});
+
+// 7. Radar Chart
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['GDP Shock', 'Peak Inflation', 'Energy Disruption', 'Govt Spending', 'Debt Impact', 'Recovery Time'],
+    datasets: [
+      {
+        label: 'COVID-19',
+        data: [97, 30, 15, 100, 95, 60],
+        borderColor: COVID,
+        backgroundColor: COVID + '22',
+        borderWidth: 2,
+        pointBackgroundColor: COVID,
+        pointRadius: 3,
+      },
+      {
+        label: 'Ukraine War',
+        data: [20, 100, 70, 30, 40, 75],
+        borderColor: UKRAINE,
+        backgroundColor: UKRAINE + '22',
+        borderWidth: 2,
+        pointBackgroundColor: UKRAINE,
+        pointRadius: 3,
+      },
+      {
+        label: 'Iran War',
+        data: [40, 45, 90, 15, 30, 50],
+        borderColor: IRAN,
+        backgroundColor: IRAN + '22',
+        borderWidth: 2,
+        pointBackgroundColor: IRAN,
+        pointRadius: 3,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 16 } }
+    },
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 100,
+        ticks: { display: false },
+        grid: { color: 'rgba(255,255,255,0.08)' },
+        angleLines: { color: 'rgba(255,255,255,0.06)' },
+        pointLabels: { font: { size: 11, weight: '600' }, color: '#94A3B8' }
+      }
+    }
+  }
+});
+
+// Scroll reveal
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+revealEls.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
